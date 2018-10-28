@@ -1,16 +1,42 @@
-plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.2.71'
-}
-
 group 'Lmax-exchange'
 version '1.0-SNAPSHOT'
+
+version = "1.0.0"
+
+buildscript {
+    ext.tornadofx_version = "1.7.17"
+    ext.junit_version = "5.1.0"
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.junit.platform:junit-platform-gradle-plugin:1.1.0"
+    }
+}
+
+apply plugin: "application"
+apply plugin: "org.junit.platform.gradle.plugin"
 
 repositories {
     mavenCentral()
 }
 
+mainClassName = "com.traderbook.connector.Connector"
+
+jar {
+    destinationDir = file("${rootDir}/dist/connectors")
+}
+
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile project(":api")
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+
+    testCompile "org.junit.jupiter:junit-jupiter-api:$junit_version"
+    testRuntime "org.junit.jupiter:junit-jupiter-engine:$junit_version"
 }
 
 compileKotlin {
