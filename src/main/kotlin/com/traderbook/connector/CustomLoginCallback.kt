@@ -45,7 +45,10 @@ class CustomLoginCallback(private val connector: Connector) : LoginCallback {
      * Permet d'intercepter l'erreur d'authentification
      */
     override fun onLoginFailure(failureResponse: FailureResponse?) {
-        println(failureResponse!!.message)
-        connector.update(Messages.BAD_CREDENTIALS, null)
+        if(failureResponse!!.message == "Invalid character found in beginning of XML comment: 'D'") {
+            connector.update(Messages.BROKER_MAINTENANCE_MODE, null)
+        } else {
+            connector.update(Messages.BAD_CREDENTIALS, null)
+        }
     }
 }

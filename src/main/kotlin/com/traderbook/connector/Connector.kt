@@ -30,7 +30,6 @@ class Connector(private var connector: IConnectorObserver): IConnector, IConnect
     }
 
     override fun update(message: Messages, data: Any?) {
-        println(message)
         connector.update(message, data)
     }
 
