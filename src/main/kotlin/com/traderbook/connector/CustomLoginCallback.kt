@@ -18,12 +18,23 @@ class CustomLoginCallback(private val connector: Connector) : LoginCallback {
             Instruments.GBPUSD to 4002L
     )
 
-    private val instruments = mutableMapOf<Long, Instrument>()
+    private val instruments = mutableMapOf<Instruments, Instrument>()
 
     private var session: Session? = null
 
     init {
-        instrumentsRef.forEach { instruments[it.value] = Instrument(it.key, 0.0, 0.0, 0.0, 0.0) }
+        instrumentsRef.forEach { instruments[it.key] = Instrument(it.value.toString(), it.key, 0.0, 0.0, 0.0, 0.0) }
+    }
+
+    private fun getInstrumentByValue(code: Long): Instruments? {
+        val instrumentFiltered = instrumentsRef.filterValues { it == code }
+        val instrument = instrumentFiltered.iterator()
+
+        if(instrument.hasNext()) {
+            return instrument.next().key
+        }
+
+        return null
     }
 
     /**
@@ -54,15 +65,17 @@ class CustomLoginCallback(private val connector: Connector) : LoginCallback {
         ))
 
         this.session!!.registerOrderBookEventListener {
-            instruments[it.instrumentId]?.oldAsk = instruments[it.instrumentId]!!.ask
-            instruments[it.instrumentId]?.ask = it.valuationAskPrice.toString().toDouble()
-            instruments[it.instrumentId]?.oldBid = instruments[it.instrumentId]!!.bid
-            instruments[it.instrumentId]?.bid = it.valuationBidPrice.toString().toDouble()
+            val instrumentName = getInstrumentByValue(it.instrumentId)
+
+            instruments[instrumentName]?.oldAsk = instruments[instrumentName]!!.ask
+            instruments[instrumentName]?.ask = it.valuationAskPrice.toString().toDouble()
+            instruments[instrumentName]?.oldBid = instruments[instrumentName]!!.bid
+            instruments[instrumentName]?.bid = it.valuationBidPrice.toString().toDouble()
 
             connector.update(Messages.INSTRUMENTS_UPDATED, InstrumentCollection(instruments))
         }
 
-        instruments.forEach { this.session!!.subscribe(OrderBookSubscriptionRequest(it.key), CustomSubscriptionCallback()) }
+        instruments.forEach { this.session!!.subscribe(OrderBookSubscriptionRequest(it.value.id.toLong()), CustomSubscriptionCallback()) }
 
         thread {
             try {
