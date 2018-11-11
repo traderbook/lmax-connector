@@ -10,6 +10,7 @@ import com.traderbook.api.enums.Messages
 import com.traderbook.api.models.BrokerAccount
 import com.traderbook.api.models.Instrument
 import com.traderbook.api.models.InstrumentCollection
+import com.traderbook.connector.helpers.InstrumentHelper
 import kotlin.concurrent.thread
 
 class CustomLoginCallback(private val connector: Connector) : LoginCallback {
@@ -65,7 +66,7 @@ class CustomLoginCallback(private val connector: Connector) : LoginCallback {
         ))
 
         this.session!!.registerOrderBookEventListener {
-            val instrumentName = getInstrumentByValue(it.instrumentId)
+            val instrumentName = InstrumentHelper.getInstrumentByValue(it.instrumentId, instrumentsRef)
 
             instruments[instrumentName]?.oldAsk = instruments[instrumentName]!!.ask
             instruments[instrumentName]?.ask = it.valuationAskPrice.toString().toDouble()
