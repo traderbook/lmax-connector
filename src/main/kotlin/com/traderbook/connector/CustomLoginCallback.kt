@@ -3,7 +3,6 @@ package com.traderbook.connector
 import com.lmax.api.FailureResponse
 import com.lmax.api.Session
 import com.lmax.api.account.LoginCallback
-import com.lmax.api.orderbook.OrderBookEventListener
 import com.lmax.api.orderbook.OrderBookSubscriptionRequest
 import com.traderbook.api.enums.Instruments
 import com.traderbook.api.enums.Messages
@@ -56,7 +55,7 @@ class CustomLoginCallback(private val connector: Connector) : LoginCallback {
     /**
      * Permet d'intercepter le succès d'authentification
      */
-    override fun onLoginSuccess(session: Session) {
+    override fun onLoginSuccess(session: Session?) {
         this.session = session
 
         connector.update(Messages.SUCCESS_LOGIN, BrokerAccount(
@@ -76,14 +75,13 @@ class CustomLoginCallback(private val connector: Connector) : LoginCallback {
             connector.update(Messages.INSTRUMENTS_UPDATED, InstrumentCollection(instruments))
         }
 
-        instruments.forEach { this.session!!.subscribe(OrderBookSubscriptionRequest(it.value.id.toLong()), CustomSubscriptionCallback()) }
 
         thread {
-            try {
-                this.session!!.start()
-            } catch (e: NullPointerException) {
-                connector.update(Messages.BROKER_MAINTENANCE_MODE, null)
+            instruments.forEach {
+                this.session!!.subscribe(OrderBookSubscriptionRequest(it.value.id.toLong()), CustomSubscriptionCallback())
             }
+
+            this.session!!.start()
         }
     }
 
