@@ -26,17 +26,6 @@ class CustomLoginCallback(private val connector: Connector) : LoginCallback {
         instrumentsRef.forEach { instruments[it.key] = Instrument(it.value.toString(), it.key, 0.0, 0.0, 0.0, 0.0) }
     }
 
-    private fun getInstrumentByValue(code: Long): Instruments? {
-        val instrumentFiltered = instrumentsRef.filterValues { it == code }
-        val instrument = instrumentFiltered.iterator()
-
-        if(instrument.hasNext()) {
-            return instrument.next().key
-        }
-
-        return null
-    }
-
     /**
      * Permet la déconnexion d'un compte chez le broker.
      * Les informations du compte sont envoyé afin de renseigné l'application quel compte de trading est déconnecté
